@@ -12,6 +12,13 @@ class Replacer:
     :author: MXuDong
     """
 
+    class VarIterator:
+        """
+        Replacer helper, for the replace the value
+
+        It is an iterator of the string param value
+        """
+
     def __init__(self, target_value="", args={}):
         """
         the init method of the Replacer
