@@ -19,7 +19,7 @@ class Replacer:
         It is an iterator of the string param value
         """
 
-        def __init__(self, target_value, flag_char='$', param_flag='@', value_flag='^', convert_flag="&"):
+        def __init__(self, target_value="", flag_char='$', param_flag='@', value_flag='^', convert_flag="&"):
             """
             init the VarIterator, and set some chars
 
@@ -49,7 +49,18 @@ class Replacer:
             """
             # start the index, get the flag_char's index, and if char of the index - 1 is
             # convert_flag, it will be continue.
-            count = self.__target_value[self.__index:].count(self.__flag_char)
+            inner_index = self.__index
+            while self.__target_value.count(self.__flag_char, inner_index) > 0:
+                flag_index = self.__target_value.index(self.__flag_char, inner_index)
+                # 前面没有数据，因此不存在转义符，一定存在
+                if flag_index == 0:
+                    return True
+                # 获取前面的数据，如果不是转义符，则直接返回True
+                if self.__target_value[flag_index - 1] == self.__convert_flag:
+                    inner_index = flag_index
+                    continue
+                return True
+            return False
 
     def __init__(self, target_value="", args={}):
         """
