@@ -47,6 +47,9 @@ class Replacer:
             if the target value has next param, it will return true, else return false
             :return: boolean
             """
+            # start the index, get the flag_char's index, and if char of the index - 1 is
+            # convert_flag, it will be continue.
+            count = self.__target_value[self.__index:].count(self.__flag_char)
 
     def __init__(self, target_value="", args={}):
         """
