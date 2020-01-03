@@ -48,20 +48,29 @@ class Replacer:
             if the target value has next param, it will return true, else return false
             :return: boolean
             """
-            # start the index, get the flag_char's index, and if char of the index - 1 is
-            # convert_flag, it will be continue.
-            inner_index = self.__index
-            while self.__target_value.count(self.__flag_char, inner_index) > 0:
-                flag_index = self.__target_value.index(self.__flag_char, inner_index)
-                # 前面没有数据，因此不存在转义符，一定存在
-                if flag_index == 0:
-                    return True
-                # 获取前面的数据，如果不是转义符，则直接返回True
-                if self.__target_value[flag_index - 1] == self.__convert_flag:
-                    inner_index = flag_index
-                    continue
-                return True
-            return False
+            while self.__index < len(self.__target_value):
+                if self.__target_value[self.__index] == self.__flag_char:
+                    # 前面没有数据，因此不存在转义符，一定存在
+                    if self.__index == 0:
+                        return True
+                    # 前面字符不是转义符
+                    if self.__target_value[self.__index - 1] != self.__convert_flag:
+                        return True
+                if self.__index != 0:
+                    # 上一个字符为转义符，对该数据进行转义
+                    if self.__target_value[self.__index - 1] == self.__convert_flag:
+                        if self.__target_value[self.__index] in [
+                            self.__convert_flag,
+                            self.__flag_char,
+                            self.__param_flag,
+                            self.__value_flag
+                        ]:
+                            self.__target_value = self.__target_value[: self.__index - 1] + self.__target_value[
+                                                                                            self.__index:]
+                        else:
+                            # 非法数据
+                            pass  # Todo throw new error
+                self.__index += 1
 
     def __init__(self, target_value="", args={}):
         """
