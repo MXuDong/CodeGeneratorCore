@@ -42,6 +42,7 @@ class Replacer:
             self.__convert_flag = convert_flag
             self.__target_value = target_value
 
+        # Todo: recode func body, the has_next will change __index value to next params
         def has_next(self):
             """
             if the target value has next param, it will return true, else return false
