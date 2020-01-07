@@ -23,7 +23,7 @@ class Replacer:
         self._args = args
         self.__var_iterator = VarIterator(target_value=target_value)
         while self.__var_iterator.has_next():
-            self.__var_iterator.get_var()
+            print(self.__var_iterator.get_var()._params)
 
 
 class VarIterator:
@@ -161,13 +161,16 @@ class VarItem:
                 ]:
                     if is_value_write:
                         param_value = param_value + char_item
+                        last_char = char_item
                         continue
                     if is_name_write:
                         param_name = param_name + char_item
+                        last_char = char_item
                         continue
                 raise ConvertException("invalid convert char : " + char_item)
             # 转义字符，直接跳过
             if char_item == self._convert_flag:
+                last_char = char_item
                 continue
             # 其他特殊字符
             if char_item == self._param_flag:
@@ -177,7 +180,14 @@ class VarItem:
                         self._convert_flag + ")")
                 else:
                     is_name_write = True
+                    last_char = char_item
+                    continue
             if char_item == self._value_flag:
+                if len(param_value) == 0 and is_value_write:
+                    is_value_write = True
+                    use_value_flag = True
+                    last_char = char_item
+                    continue
                 if is_value_write:
                     if use_value_flag:
                         self._params.update({param_name: param_value})
@@ -186,6 +196,7 @@ class VarItem:
                         is_name_write = False
                         is_value_write = False
                         use_value_flag = False
+                        last_char = char_item
                         continue
                     else:
                         raise ConvertException(
@@ -199,6 +210,7 @@ class VarItem:
                         )
                     is_value_write = True
                     use_value_flag = True
+                    last_char = char_item
                     continue
             if char_item in [' ', '\n']:
                 if is_value_write and not use_value_flag:
@@ -208,17 +220,21 @@ class VarItem:
                     is_name_write = False
                     is_value_write = False
                     use_value_flag = False
+                    last_char = char_item
                     continue
                 elif is_value_write and use_value_flag:
                     param_value += char_item
-                    continue
-                else:
-                    raise ConvertException("invalid char")
+                continue
             if char_item == '=':
                 if is_name_write:
                     is_name_write = False
+                    is_value_write = True
+                    last_char = char_item
                     continue
             if is_name_write:
                 param_name += char_item
             if is_value_write:
                 param_value += char_item
+            last_char = char_item
+        if param_value != "" or param_name != "":
+            self._params.update({param_name: param_value})
