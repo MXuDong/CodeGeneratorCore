@@ -47,15 +47,15 @@ class VarIterator:
             flag_char, param_flag, value_flag, convert_flag convert_flag will be turn to itself by
             convert_flag
         """
-        self.__index = 0
-        self.__open_index = -1
-        self.__close_index = -1
-        self.__flag_char = flag_char
-        self.__param_flag = param_flag
-        self.__value_flag = value_flag
-        self.__convert_flag = convert_flag
-        self.__target_value = target_value
-        self.__flag_mod = False
+        self._index = 0
+        self._open_index = -1
+        self._close_index = -1
+        self._flag_char = flag_char
+        self._param_flag = param_flag
+        self._value_flag = value_flag
+        self._convert_flag = convert_flag
+        self._target_value = target_value
+        self._flag_mod = False
 
     # Todo: recode func body, the has_next will change __index value to next params
     def has_next(self):
@@ -63,31 +63,31 @@ class VarIterator:
         if the target value has next param, it will return true, else return false
         :return: boolean
         """
-        while self.__index < len(self.__target_value):
-            if self.__target_value[self.__index] == self.__flag_char:
+        while self._index < len(self._target_value):
+            if self._target_value[self._index] == self._flag_char:
                 # 前面没有数据，因此不存在转义符，一定存在
-                if self.__index == 0:
-                    self.__flag_mod = True
+                if self._index == 0:
+                    self._flag_mod = True
                     return True
                 # 前面字符不是转义符
-                if self.__target_value[self.__index - 1] != self.__convert_flag:
-                    self.__flag_mod = True
+                if self._target_value[self._index - 1] != self._convert_flag:
+                    self._flag_mod = True
                     return True
-            if self.__index != 0:
+            if self._index != 0:
                 # 上一个字符为转义符，对该数据进行转义
-                if self.__target_value[self.__index - 1] == self.__convert_flag:
-                    if self.__target_value[self.__index] in [
-                        self.__convert_flag,
-                        self.__flag_char,
-                        self.__param_flag,
-                        self.__value_flag
+                if self._target_value[self._index - 1] == self._convert_flag:
+                    if self._target_value[self._index] in [
+                        self._convert_flag,
+                        self._flag_char,
+                        self._param_flag,
+                        self._value_flag
                     ]:
-                        self.__target_value = self.__target_value[: self.__index - 1] + self.__target_value[
-                                                                                        self.__index:]
+                        self._target_value = self._target_value[: self._index - 1] + self._target_value[
+                                                                                       self._index:]
                     else:
                         # 非法数据
-                        raise ConvertException("invalid convert char :" + self.__target_value[self.__index])
-            self.__index += 1
+                        raise ConvertException("invalid convert char :" + self._target_value[self._index])
+            self._index += 1
         # 能够循环结束，没有数据
         return False
 
@@ -96,22 +96,22 @@ class VarIterator:
         get the VarItem for the param, it will return next params, and if the param has no close char_flag, it will
         throw the exception
         """
-        if not self.__flag_mod:
+        if not self._flag_mod:
             raise ConvertException("Get next before get var.")
-        self.__index += 1
-        self.__open_index = self.__index
+        self._index += 1
+        self._open_index = self._index
 
-        while self.__index < len(self.__target_value):
-            if self.__target_value[self.__index] == self.__flag_char:
-                if self.__target_value[self.__index - 1] != self.__convert_flag:
-                    self.__flag_mod = False
-                    self.__index += 1
-                    return VarItem(self.__target_value[self.__open_index: self.__index - 1])
-            self.__index += 1
+        while self._index < len(self._target_value):
+            if self._target_value[self._index] == self._flag_char:
+                if self._target_value[self._index - 1] != self._convert_flag:
+                    self._flag_mod = False
+                    self._index += 1
+                    return VarItem(self._target_value[self._open_index: self._index - 1])
+            self._index += 1
 
-        self.__flag_mod = False
+        self._flag_mod = False
         raise ConvertException("invalid param, can't find the close flag in the param, and the open flag is :" +
-                               str(self.__open_index))
+                               str(self._open_index))
 
 
 class VarItem:
@@ -120,4 +120,8 @@ class VarItem:
     """
 
     def __init__(self, target_value):
-        pass
+        self._params = {}
+        self._value = target_value
+
+    def _parse_value(self):
+
