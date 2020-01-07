@@ -83,7 +83,7 @@ class VarIterator:
                         self._value_flag
                     ]:
                         self._target_value = self._target_value[: self._index - 1] + self._target_value[
-                                                                                       self._index:]
+                                                                                     self._index:]
                     else:
                         # 非法数据
                         raise ConvertException("invalid convert char :" + self._target_value[self._index])
@@ -106,7 +106,11 @@ class VarIterator:
                 if self._target_value[self._index - 1] != self._convert_flag:
                     self._flag_mod = False
                     self._index += 1
-                    return VarItem(self._target_value[self._open_index: self._index - 1])
+                    return VarItem(self._target_value[self._open_index: self._index - 1],
+                                   self._flag_char,
+                                   self._param_flag,
+                                   self._value_flag,
+                                   self._convert_flag)
             self._index += 1
 
         self._flag_mod = False
@@ -119,9 +123,102 @@ class VarItem:
     this class for the param item, provide some method for the deal.
     """
 
-    def __init__(self, target_value):
+    def __init__(self, target_value, flag_char='$', param_flag='@', value_flag='^', convert_flag="&"):
         self._params = {}
         self._value = target_value
+        self._flag_char = flag_char
+        self._param_flag = param_flag
+        self._value_flag = value_flag
+        self._convert_flag = convert_flag
+        self._parse_value()
 
     def _parse_value(self):
+        """
+        parse the target value, it will get all params as a map.
+        the parse rule and common formats:
+            set the values:
+            flag_char=$, param_flag=@, value_flag=^, convert_flag=&
+        $ @param1=^value1^ @param2=^value2 && &^ &@ &$ ^ $
+        when the value is common word, and without convert_flag or space, it can default use without value_flag
+            such as:
+            $ @param1=value1
+        """
 
+        last_char = ""
+        param_name = ""
+        param_value = ""
+        is_name_write = False
+        is_value_write = False
+        use_value_flag = False
+        for char_item in self._value:
+            # 上一字符需要转义
+            if last_char == self._convert_flag:
+                if char_item in [
+                    self._convert_flag,
+                    self._value_flag,
+                    self._param_flag,
+                    self._flag_char
+                ]:
+                    if is_value_write:
+                        param_value = param_value + char_item
+                        continue
+                    if is_name_write:
+                        param_name = param_name + char_item
+                        continue
+                raise ConvertException("invalid convert char : " + char_item)
+            # 转义字符，直接跳过
+            if char_item == self._convert_flag:
+                continue
+            # 其他特殊字符
+            if char_item == self._param_flag:
+                if is_name_write or is_value_write:
+                    raise ConvertException(
+                        "invalid param_flag, the params flag must before convert flag(" +
+                        self._convert_flag + ")")
+                else:
+                    is_name_write = True
+            if char_item == self._value_flag:
+                if is_value_write:
+                    if use_value_flag:
+                        self._params.update({param_name: param_value})
+                        param_value = ""
+                        param_name = ""
+                        is_name_write = False
+                        is_value_write = False
+                        use_value_flag = False
+                        continue
+                    else:
+                        raise ConvertException(
+                            "invalid value_flag, the value flag must before convert flag(" +
+                            self._convert_flag + ")"
+                        )
+                else:
+                    if is_name_write:
+                        raise ConvertException(
+                            "error for param name"
+                        )
+                    is_value_write = True
+                    use_value_flag = True
+                    continue
+            if char_item in [' ', '\n']:
+                if is_value_write and not use_value_flag:
+                    self._params.update({param_name: param_value})
+                    param_value = ""
+                    param_name = ""
+                    is_name_write = False
+                    is_value_write = False
+                    use_value_flag = False
+                    continue
+                elif is_value_write and use_value_flag:
+                    param_value += char_item
+                    continue
+                else:
+                    raise ConvertException("invalid char")
+            if char_item == '=':
+                if is_name_write:
+                    is_name_write = False
+                    continue
+            if is_name_write:
+                param_name += char_item
+            if is_value_write:
+                param_value += char_item
