@@ -21,9 +21,9 @@ class Replacer:
         :param args: the args is the value of replace
         """
         self._args = args
-        self.__var_iterator = VarIterator(target_value=target_value)
-        while self.__var_iterator.has_next():
-            print(self.__var_iterator.get_var()._params)
+        self._var_iterator = VarIterator(target_value=target_value)
+        while self._var_iterator.has_next():
+            var_item = self._var_iterator.get_var()
 
 
 class VarIterator:
