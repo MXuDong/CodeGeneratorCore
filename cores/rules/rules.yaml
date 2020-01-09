@@ -1,0 +1,18 @@
+root:
+  type: map
+  elements:
+    - template
+template:
+  type: map
+  elements:
+    - name
+    - hocks:
+        require: False
+        type: map
+        elements:
+          - name
+    - body:
+        require: False
+    - refs
+name:
+  type: string

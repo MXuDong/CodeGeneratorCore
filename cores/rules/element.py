@@ -8,7 +8,7 @@ class Element:
     all value will be converted to this class.
     """
 
-    def __init__(self):
+    def __init__(self, name):
         self._name = ""
         self._value = None
         self.type = None
