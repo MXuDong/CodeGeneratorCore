@@ -2,6 +2,7 @@ root:
   type: map
   elements:
     - template
+
 template:
   type: map
   elements:
@@ -11,8 +12,13 @@ template:
         type: map
         elements:
           - name
+          - test
     - body:
         require: False
     - refs
+test:
+  type: string
 name:
   type: string
+  elements:
+    - test

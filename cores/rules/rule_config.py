@@ -4,11 +4,12 @@ The element build config, the element will use this config to build the Elements
 from cores.rules.element import Element
 
 
+# fixme the repeat element.
+# update the complete element
 def update_hock(be_search, target_value):
     for item in be_search:
         for inner_item in item.get("sons"):
             has_type = inner_item.get("type") is not None
-            print(inner_item, has_type)
             if not has_type:
                 if target_value.get("name") == inner_item.get("name"):
                     inner_item.update({'sons': target_value.get("sons")})
@@ -17,8 +18,13 @@ def update_hock(be_search, target_value):
                 update_hock([inner_item], target_value)
 
 
-def update_from_template():
-    pass
+# update the now element
+def update_from_template(be_search, target_value):
+    for sons in target_value.get("sons"):
+        for temp in be_search:
+            if sons.get("name") == temp.get("name"):
+                sons.update({"sons": temp.get("sons")})
+                sons.update({"type": temp.get("type")})
 
 
 class RuleConfig:
@@ -33,6 +39,7 @@ class RuleConfig:
         res = []
         if not isinstance(dicts, list):
             raise Exception("element error is not list")
+        out_element = None
         for item in dicts:
             if isinstance(item, dict):
                 for key in item.keys():
@@ -55,7 +62,6 @@ class RuleConfig:
 
                         if "elements" in inner_value.keys():
                             inner_list = inner_value.get("elements")
-                            sub_elements = []
                             if isinstance(inner_list, list):
                                 for inner_element in inner_list:
                                     if isinstance(inner_element, dict):
@@ -80,12 +86,10 @@ class RuleConfig:
                                     else:
                                         sons.append(
                                             {'name': inner_element, "require": True})
-                    # print(key, item[key])
-                    # print(element_name, element_type, element_require, sons)
                     # 查找元素，并对原有数据进行添加
 
                     element_item = {'name': key, 'require': element_require, 'type': element_type, 'sons': sons}
-
+                    out_element = element_item
                     update_hock(root_element, element_item)
                     update_hock(temp_element, element_item)
 
@@ -93,8 +97,9 @@ class RuleConfig:
                         root_element.append(element_item)
                     else:
                         temp_element.append(element_item)
+
                     res.append(element_item)
-                    # print(element_item)
+        update_from_template(temp_element, out_element)
         if len(res) == 1:
             return res[0]
 
@@ -103,34 +108,4 @@ class RuleConfig:
         temp_element = []
         self._init_by_list(target_value, res_element, temp_element)
         print(res_element)
-        # print(temp_element)
-        # if not isinstance(target_value, list):
-        #     raise Exception("yaml root element error.")
-        # for item in target_value:
-        #     if isinstance(item, dict):
-        #         for key in item.keys():
-        #             temp = item[key]
-        #             print(temp)
-        #             value_type = ""
-        #             sons = []
-        #             if isinstance(temp, dict):
-        #                 if temp.get("type") is None:
-        #                     raise Exception("\'" + key + "\' element should has type.")
-        #                 value_type = temp.get("type")
-        #             else:
-        #                 raise Exception("\'" + key + "\' should be a dict or map")
-        #
-        #             elements = temp.get("elements")
-        #             if elements is not None:
-        #                 if not isinstance(elements, list):
-        #                     raise Exception("elements must a list. error in key \'" + key + "\'")
-        #                 for ele_item in elements:
-        #                     if isinstance(ele_item, str):
-        #                         sons.append(ele_item)
-        #                     elif isinstance(ele_item, dict):
-        #                         print(ele_item)
-        #             if key == 'root':
-        #                 res_element.append({'name': key, 'type': value_type, "elements": elements})
-        #             else:  # 子元素添加
-        #                 temp_element.append({'name': key, 'type': value_type, "elements": elements})
-        # return res_element
+        print(temp_element)
