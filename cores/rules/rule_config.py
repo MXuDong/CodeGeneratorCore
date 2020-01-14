@@ -17,6 +17,10 @@ def update_hock(be_search, target_value):
                 update_hock([inner_item], target_value)
 
 
+def update_from_template():
+    pass
+
+
 class RuleConfig:
     """
     Config the rules, it provide some method to build.
